@@ -9,7 +9,7 @@ pipeline {
   stages {
     stage('Build') {
       steps {
-        sh 'pip3 install -r requirements.txt'
+        sh 'pip3 install -r /var/lib/jenkins/workspace/Multi-branch_stage/requirements.txt'
       }
     }
     stage('Test') {
