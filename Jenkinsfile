@@ -1,52 +1,52 @@
 pipeline {
-    agent any
-    environment {
-        PROJECT_NAME = "todo-list"
+  agent any
+  environment {
+    APP_NAME = 'my-python-app'
+    // DEV_SERVER = 'dev.example.com'
+    // STAGE_SERVER = 'stage.example.com'
+    // PROD_SERVER = 'prod.example.com'
+  }
+  stages {
+    stage('Build') {
+      steps {
+        sh 'pip3 install -r requirements.txt'
+      }
     }
-    stages{
-        stage('Init') {
-            steps{
-                script{
-                    cleanWs()
-                    sh """
-                    git clone https://github.com/mrpeppermintkg/todo-test.git
-                    cd todo-test/
-                    """
-
-                    if(env == "dev"){
-                        withCredentials([string(credentialsId: 'DEV_HOST', variable: 'DEV_HOST')]){
-                            HOST_IP = ${DEV_HOST}
-                        }
-                    }
-                    else if(env == "stage"){
-                        withCredentials([string(credentialsId: 'STAGE_HOST', variable: 'STAGE_HOST')]){
-                            HOST_IP = ${STAGE_HOST}
-                            }
-                    }
-                    else if(env == "prod"){
-                        withCredentials([string(credentialsId: 'PROD_HOST', variable: 'PROD_HOST')]){
-                            HOST_IP = ${PROD_HOST}
-                            }
-                    }
-                    else{
-                        echo "Enter valid Env"
-                    }
-                }
-                    
-            }
-        }
-
-        stage('Build'){
-            steps{
-                script{
-                    withCredentials([string(credentialsId: 'SSH-Key', variable: 'ssh-key')]){
-                        sh """
-                        echo ${ssh-key} > docker.pem
-                        ls
-                        """
-                    }
-                }
-            }
-        }
+    stage('Test') {
+      steps {
+        sh 'python manage.py test'
+      }
     }
+    stage('Deploy to Dev') {
+      when {
+        branch 'dev'
+      }
+      steps {
+        sh "ssh jenkins@54.89.158.126 'cd /var/www/${APP_NAME} && git pull && pip install -r requirements.txt && python manage.py migrate && sudo service ${APP_NAME} restart'"
+    }
+    }
+    stage('Deploy to Stage') {
+      when {
+        branch 'stage'
+      }
+        steps {
+          sh "ssh jenkins@3.89.127.188 'cd /var/www/${APP_NAME} && git pull && pip install -r requirements.txt && python manage.py migrate && sudo service ${APP_NAME} restart'"
+    }
+
+    }
+    stage('Deploy to Prod') {
+      when {
+        branch 'master'
+      }
+      steps {
+         sh "ssh jenkins@54.172.50.79 'cd /var/www/${APP_NAME} && git pull && pip install -r requirements.txt && python manage.py migrate && sudo service ${APP_NAME} restart'"
+
+      }
+    }
+  }
+  post {
+    always {
+      sh 'rm -rf venv'
+    }
+  }
 }
