@@ -7,7 +7,7 @@ pipeline {
         stage('Build') {
             steps {
                 sh 'pip install -r requirements.txt'
-                sh 'python manage.py migrate'
+                sh 'python3 manage.py migrate'
             }
         }
         stage('Deploy') {
@@ -20,8 +20,8 @@ pipeline {
                         'PROD': '54.172.50.79'
                     ]
                     def host = hostMap[params.ENVIRONMENT]
-                    sshCommand sshUser: sshUser, host: host, command: 'pip install -r requirements.txt'
-                    sshCommand sshUser: sshUser, host: host, command: 'python manage.py migrate'
+                    sshCommand sshUser: sshUser, host: host, command: 'pip3 install -r requirements.txt'
+                    sshCommand sshUser: sshUser, host: host, command: 'python3 manage.py migrate'
                 }
             }
         }
