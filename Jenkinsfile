@@ -17,6 +17,11 @@ pipeline {
         }
         stage('Deploy') {
             steps {
+                checkout scm
+                script {
+                    def checkoutDir = pwd()
+                    echo "The code is checked out in ${checkoutDir}"
+                }
                 script {
                     def sshUser = 'jenkins'
                     def hostMap = [
@@ -25,8 +30,7 @@ pipeline {
                         'PROD': '54.172.50.79'
                     ]
                     def host = hostMap[params.ENVIRONMENT]
-                    // sshCommand sshUser: sshUser, host: host, command: 'git clone https://github.com/mrpeppermintkg/todo-test.git'
-                    sshCommand sshUser: sshUser, host: host, command: 'cd todo-test && pip install -r requirements.txt'
+                    sshCommand sshUser: sshUser, host: host, command: 'cd '${checkoutDir}' && pip install -r requirements.txt'
                 }
             }
         }
