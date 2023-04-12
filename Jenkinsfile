@@ -12,9 +12,7 @@ pipeline{
                     cleanWs()
                     checkout scm
                     if(env.equals("dev")){
-                        withCredentials([string(credentialsId: 'DEV_HOST', variable: 'dev_host')]){
-                            deploy_ip = dev_host
-                        }
+                        deploy_ip = credentials('DEV_HOST')
                     }
                     else if(env.equals("stage")){
                         withCredentials([string(credentialsId: 'STAGE_HOST', variable: 'stage_host')]){
