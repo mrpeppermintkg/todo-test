@@ -34,7 +34,6 @@ pipeline{
                 steps{
                     script{
                         withCredentials([file(credentialsId: 'SSH-Key', variable: 'pem-key')]){
-                            pem_key = pem-key
                             sh """
                             echo ${pem_key} > docker.pem
                             chmod 400 docker.pem
