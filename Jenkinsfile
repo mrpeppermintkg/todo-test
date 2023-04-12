@@ -1,52 +1,49 @@
-pipeline {
-  agent any
-  environment {
-    APP_NAME = 'my-python-app'
-    // DEV_SERVER = 'dev.example.com'
-    // STAGE_SERVER = 'stage.example.com'
-    // PROD_SERVER = 'prod.example.com'
-  }
-  stages {
-    stage('Build') {
-      steps {
-        sh 'pip3 install -r requirements.txt'
-      }
+pipeline{
+    environment{
+        DEV_HOST = "${env.DEV_HOST}"
     }
-    stage('Test') {
-      steps {
-        sh 'python manage.py test'
-      }
-    }
-    stage('Deploy to Dev') {
-      when {
-        branch 'dev'
-      }
-      steps {
-        sh "ssh jenkins@54.89.158.126 'cd /var/www/${APP_NAME} && git pull && pip install -r requirements.txt && python manage.py migrate && sudo service ${APP_NAME} restart'"
-    }
-    }
-    stage('Deploy to Stage') {
-      when {
-        branch 'stage'
-      }
-        steps {
-          sh "ssh jenkins@3.89.127.188 'cd /var/www/${APP_NAME} && git pull && pip install -r requirements.txt && python manage.py migrate && sudo service ${APP_NAME} restart'"
-    }
+    agent any
+    stages{
+        stage('Init'){
+            steps{
+                script{
+                    cleanWs()
+                    checkout scm
+                    if(env.equals("dev")){
+                        withCredentials([string(credentialsId: 'DEV_HOST', variable: 'dev_host')]){
+                            deploy_ip = dev_host
+                        }
+                    }
+                    else if(env.equals("stage")){
+                        withCredentials([string(credentialsId: 'STAGE_HOST', variable: 'stage_host')]){
+                            deploy_ip = stage_host
+                        }
+                    }
+                    else if(env.prod){
+                        withCredentials([string(credentialsId: 'PROD_HOST', variable: 'prod_host')]){
+                            deploy_ip = prod_host
+                        }
+                    }
+                    else{
+                        echo "Select appropriate env"
+                    }
+                    }
+                }
+            }
+            stage('Deploy'){
+                steps{
+                    script{
+                        withCredentials([file(credentialsId: 'SSH-Key', variable: 'pem-key')]){
+                            pem_key = pem-key
+                            sh """
+                            echo ${pem_key} > docker.pem
+                            chmod 400 docker.pem
+                            ssh -i "docker.pem" ubuntu@${deploy_ip}
+                            """
+                        }
+                    }
+                }
+            }
 
+        }
     }
-    stage('Deploy to Prod') {
-      when {
-        branch 'master'
-      }
-      steps {
-         sh "ssh jenkins@54.172.50.79 'cd /var/www/${APP_NAME} && git pull && pip install -r requirements.txt && python manage.py migrate && sudo service ${APP_NAME} restart'"
-
-      }
-    }
-  }
-  post {
-    always {
-      sh 'rm -rf venv'
-    }
-  }
-}
