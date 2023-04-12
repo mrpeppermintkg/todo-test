@@ -5,12 +5,16 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                node(params.ENVIRONMENT) {
+                    checkout scm
+                }
             }
         }
         stage('Build') {
             steps {
-                sh 'pip install -r requirements.txt'
+                node(params.ENVIRONMENT) {
+                    sh 'pip install -r requirements.txt'
+                }
             }
         }
         stage('Deploy') {
