@@ -2,6 +2,7 @@ pipeline{
     environment{
         DEV_HOST = "${env.DEV_HOST}"
         SECRET_FILE = credentials('SSH-Key')
+        deploy_ip = ""
     }
     agent any
     stages{
