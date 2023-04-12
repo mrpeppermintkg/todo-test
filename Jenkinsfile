@@ -30,7 +30,8 @@ pipeline {
                         'PROD': '54.172.50.79'
                     ]
                     def host = hostMap[params.ENVIRONMENT]
-                    sshCommand sshUser: sshUser, host: host, command: 'cd '${checkoutDir}' && pip install -r requirements.txt'
+                    // sshCommand sshUser: sshUser, host: host, command: 'cd '${checkoutDir}' && pip install -r requirements.txt'
+                    sshCommand sshUser: sshUser, host: host, command: 'cd ' + checkoutDir + ' && pip install -r requirements.txt'
                 }
             }
         }
