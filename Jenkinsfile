@@ -10,6 +10,9 @@ pipeline {
                 
             }
         }
+        stage('Checkout') {
+            checkout scm
+        }
         stage('Deploy') {
             steps {
                 script {
@@ -20,9 +23,8 @@ pipeline {
                         'PROD': '54.172.50.79'
                     ]
                     def host = hostMap[params.ENVIRONMENT]
-                    sshCommand sshUser: sshUser, host: host, command: 'git clone https://github.com/mrpeppermintkg/todo-test.git'
+                    // sshCommand sshUser: sshUser, host: host, command: 'git clone https://github.com/mrpeppermintkg/todo-test.git'
                     sshCommand sshUser: sshUser, host: host, command: 'cd todo-test && pip install -r requirements.txt'
-//                     sshCommand sshUser: sshUser, host: host, command: 'python3 manage.py migrate'
                 }
             }
         }
