@@ -1,6 +1,7 @@
 pipeline{
     environment{
         DEV_HOST = "${env.DEV_HOST}"
+        SECRET_FILE = credentials('SSH-Key')
     }
     agent any
     stages{
@@ -33,13 +34,11 @@ pipeline{
             stage('Deploy'){
                 steps{
                     script{
-                        withCredentials([file(credentialsId: 'SSH-Key', variable: 'pem-key')]){
                             sh """
-                            echo ${pem_key} > docker.pem
+                            echo ${SECRET_FILE} > docker.pem
                             chmod 400 docker.pem
                             ssh -i "docker.pem" ubuntu@${deploy_ip}
                             """
-                        }
                     }
                 }
             }
